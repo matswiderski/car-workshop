@@ -1,3 +1,6 @@
+using Categories.API.Models;
+using Categories.API.Services;
+
 namespace Categories.API
 {
     public class Program
@@ -7,12 +10,15 @@ namespace Categories.API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.Services.Configure<CategoriesDatabaseSettings>(builder.Configuration.GetSection("CategoriesDatabase"));
+            builder.Services.AddSingleton<ICategoriesService, CategoriesService>();
 
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddControllers(options =>
+                options.SuppressAsyncSuffixInActionNames = false
+            );
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
