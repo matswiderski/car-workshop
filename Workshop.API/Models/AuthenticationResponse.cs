@@ -1,6 +1,6 @@
 ﻿namespace Workshop.API.Models
 {
-    public class AuthenticatedResponse
+    public class AuthenticationResponse
     {
         public string Token { get; init; }
     }

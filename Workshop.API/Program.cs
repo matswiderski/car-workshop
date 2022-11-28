@@ -1,10 +1,11 @@
-using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Workshop.API.Data;
 using Workshop.API.Extensions;
-using Workshop.API.Filters;
+using Workshop.API.Services;
 
 namespace Workshop.API
 {
@@ -14,23 +15,30 @@ namespace Workshop.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddDbContext<WorkshopDbContext>(
                 options => options.UseSqlServer(builder.Configuration.GetConnectionString("WorkshopContext")));
-            builder.Services.ConfigureIdentity();
-            builder.Services.ConfigureFluentValidation();
+            builder.Services.AddIdentity();
+            builder.Services.AddFluentValidation();
+            builder.Services.AddSingleton<ITokenService, TokenService>();
 
-            builder.Services.AddControllers(options =>
-            {
-                options.Filters.Add(typeof(ValidateModelAttribute));
-            });
-
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+                    ValidAudience = builder.Configuration["JWT:ValidAudience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]))
+                }
+            );
+            builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
