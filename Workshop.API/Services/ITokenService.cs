@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
+﻿using System.Security.Claims;
+using Workshop.API.Models;
 
 namespace Workshop.API.Services
 {
     public interface ITokenService
     {
-        string GenerateToken(IdentityUser user, Claim[] userClaims);
+        string GenerateAccesToken(AuthenticationRequest credentials);
+        string GenerateRefreshToken();
+        ClaimsPrincipal GetClaimsPrincipalFromExpiredToken(string token);
     }
 }

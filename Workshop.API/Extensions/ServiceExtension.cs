@@ -1,11 +1,9 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Workshop.API.Data;
 using Workshop.API.Filters;
+using Workshop.API.Models;
 
 namespace Workshop.API.Extensions
 {
@@ -13,18 +11,31 @@ namespace Workshop.API.Extensions
     {
         public static void AddIdentity(this IServiceCollection services)
         {
-            services.AddIdentityCore<IdentityUser>(options =>
+            services.AddIdentityCore<WorkshopUser>(options =>
             {
-                options.SignIn.RequireConfirmedAccount = true;
+                options.SignIn.RequireConfirmedAccount = false;
                 options.User.RequireUniqueEmail = true;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireDigit = true;
                 options.Password.RequireUppercase = true;
                 options.Password.RequireNonAlphanumeric = true;
-                options.User.AllowedUserNameCharacters = string.Empty;
             })
                 .AddEntityFrameworkStores<WorkshopDbContext>();
 
+        }
+
+        public static void AddCors(this IServiceCollection services, string AllowReactUI)
+        {
+            services.AddCors(options =>
+            {
+                options.AddPolicy(AllowReactUI,
+                    policy =>
+                    {
+                        policy.WithOrigins("http://localhost:3000")
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
+                    });
+            });
         }
 
         public static void AddFluentValidation(this IServiceCollection services)

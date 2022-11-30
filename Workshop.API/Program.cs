@@ -14,12 +14,14 @@ namespace Workshop.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            string AllowReactUI = "allowReactUI";
+            builder.Services.AddCors(AllowReactUI);
             builder.Services.AddDbContext<WorkshopDbContext>(
                 options => options.UseSqlServer(builder.Configuration.GetConnectionString("WorkshopContext")));
             builder.Services.AddIdentity();
             builder.Services.AddFluentValidation();
             builder.Services.AddSingleton<ITokenService, TokenService>();
+            builder.Services.AddScoped<IUserRepositoryService, UserRepositoryService>();
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -46,6 +48,8 @@ namespace Workshop.API
             }
 
             app.UseHttpsRedirection();
+
+            app.UseCors(AllowReactUI);
 
             app.UseAuthentication();
             app.UseAuthorization();
