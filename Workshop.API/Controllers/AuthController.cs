@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
+using Workshop.API.Migrations;
 using Workshop.API.Models;
 using Workshop.API.Services;
 
@@ -20,7 +23,7 @@ namespace Workshop.API.Controllers
         }
 
         [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthenticationTokens))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Object))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost, Route("login")]
         public async Task<IActionResult> Login([FromBody] AuthenticationRequest credentials)
@@ -28,10 +31,19 @@ namespace Workshop.API.Controllers
             bool userValid = await _userRepositoryService.IsUserValidAsync(credentials);
             if (!userValid)
                 return BadRequest();
-            string accesToken = _tokenService.GenerateAccesToken(credentials);
+            string accessToken = _tokenService.GenerateAccessToken(credentials);
             string refreshToken = (await _userRepositoryService.CreateUserRefreshTokenAsync(credentials.EmailAddress)).Token;
             await _userRepositoryService.SaveChangesAsync();
-            return Ok(new AuthenticationTokens { Token = accesToken, RefreshToken = refreshToken });
+            var cookieOptions = new CookieOptions()
+            {
+                HttpOnly = true,
+                IsEssential = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddDays(14)
+            };
+            Response.Cookies.Append("x-refresh-token", refreshToken, cookieOptions);
+            return Ok(new { token = accessToken });
         }
 
         [Consumes(MediaTypeNames.Application.Json)]
@@ -45,23 +57,23 @@ namespace Workshop.API.Controllers
         }
 
         [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Object))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpPost, Route("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] AuthenticationTokens tokens)
+        public async Task<IActionResult> RefreshToken([FromBody] string token)
         {
-            var claimsPrincpal = _tokenService.GetClaimsPrincipalFromExpiredToken(tokens.Token);
-            var email = claimsPrincpal.Identity?.Name;
+            var claimsPrincpal = _tokenService.GetClaimsPrincipalFromExpiredToken(token);
+            var email = claimsPrincpal.Identity.Name;
             var user = await _userRepositoryService.GetUserByEmailAsync(email);
             if (user == null)
                 return Unauthorized();
-            var refreshToken = await _userRepositoryService.IsRefreshTokenValidAsync(user, tokens.RefreshToken);
+            var refreshToken = await _userRepositoryService.IsRefreshTokenValidAsync(user, Request.Cookies["x-refresh-token"]);
             if (refreshToken == null)
                 return Unauthorized();
-            if (refreshToken.CreationTime.AddMinutes(1) < DateTime.UtcNow)
+            if (refreshToken.CreationTime.AddDays(14) < DateTime.UtcNow)
                 return Unauthorized();
             await _userRepositoryService.DeleteTokenAsync(refreshToken.Token);
-            string newAccesToken = _tokenService.GenerateAccesToken(
+            string newAccessToken = _tokenService.GenerateAccessToken(
                 new AuthenticationRequest
                 {
                     EmailAddress = email,
@@ -69,8 +81,16 @@ namespace Workshop.API.Controllers
                 });
             var newRefreshToken = await _userRepositoryService.CreateUserRefreshTokenAsync(email);
             await _userRepositoryService.SaveChangesAsync();
-            return Ok(
-                new AuthenticationTokens { Token = newAccesToken, RefreshToken = newRefreshToken.Token });
+            var cookieOptions = new CookieOptions()
+            {
+                HttpOnly = true,
+                IsEssential = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddDays(14)
+            };
+            Response.Cookies.Append("x-refresh-token", newRefreshToken.Token, cookieOptions);
+            return Ok(new { token = newAccessToken });
         }
     }
 }

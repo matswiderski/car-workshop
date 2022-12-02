@@ -16,7 +16,7 @@ namespace Workshop.API.Services
             _config = config;
         }
 
-        public string GenerateAccesToken(AuthenticationRequest credentials)
+        public string GenerateAccessToken(AuthenticationRequest credentials)
         {
             var claims = new[]
             {
@@ -28,7 +28,7 @@ namespace Workshop.API.Services
                 issuer: _config["JWT:ValidIssuer"],
                 audience: _config["JWT:ValidAudience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(5),
+                expires: DateTime.UtcNow.AddMinutes(3),
                 signingCredentials: signinCredentials
             );
             return new JwtSecurityTokenHandler().WriteToken(token);
