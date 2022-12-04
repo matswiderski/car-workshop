@@ -1,10 +1,8 @@
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Workshop.API.Data;
+using Microsoft.AspNetCore.Identity;
 using Workshop.API.Extensions;
+using Workshop.API.Models;
+using Workshop.API.Providers;
 using Workshop.API.Services;
 
 namespace Workshop.API
@@ -15,27 +13,17 @@ namespace Workshop.API
         {
             var builder = WebApplication.CreateBuilder(args);
             string AllowReactUI = "allowReactUI";
+            builder.AddDb();
+            builder.AddAuthentication();
+            builder.AddMailService();
             builder.Services.AddCors(AllowReactUI);
-            builder.Services.AddDbContext<WorkshopDbContext>(
-                options => options.UseSqlServer(builder.Configuration.GetConnectionString("WorkshopContext")));
             builder.Services.AddIdentity();
             builder.Services.AddFluentValidation();
             builder.Services.AddSingleton<ITokenService, TokenService>();
             builder.Services.AddScoped<IUserRepositoryService, UserRepositoryService>();
-
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-                    ValidAudience = builder.Configuration["JWT:ValidAudience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"])),
-                    ClockSkew = TimeSpan.Zero
-                }
-            );
+            builder.Services.AddTransient<EmailConfirmationTokenProvider<WorkshopUser>>();
+            builder.Logging.ClearProviders();
+            builder.Logging.AddConsole();
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

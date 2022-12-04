@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DDED25B7-E8E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Categories.API", "src\Categories.API\Categories.API.csproj", "{1F63ACC7-8F2B-4D4C-BC3D-470E4AF9590D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Workshop.API", "Workshop.API\Workshop.API.csproj", "{A4AF520E-5AFF-4044-A917-4D02411AF6F9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Workshop.API", "src\Workshop.API\Workshop.API.csproj", "{A4AF520E-5AFF-4044-A917-4D02411AF6F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

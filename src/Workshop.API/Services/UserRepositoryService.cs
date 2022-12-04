@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Workshop.API.Data;
 using Workshop.API.Models;
@@ -10,7 +11,9 @@ namespace Workshop.API.Services
         private readonly UserManager<WorkshopUser> _userManager;
         private readonly WorkshopDbContext _dbContext;
         private readonly ITokenService _tokenService;
-        public UserRepositoryService(UserManager<WorkshopUser> userManager, WorkshopDbContext dbContext, ITokenService tokenService)
+        public UserRepositoryService(UserManager<WorkshopUser> userManager,
+            WorkshopDbContext dbContext,
+            ITokenService tokenService)
         {
             _userManager = userManager;
             _dbContext = dbContext;
@@ -27,15 +30,25 @@ namespace Workshop.API.Services
         }
 
         public async Task<WorkshopUser> GetUserByEmailAsync(string email)
+            => await _userManager.FindByEmailAsync(email);
+
+        public async Task<WorkshopUser> GetUserByIdAsync(string id)
+             => await _userManager.FindByIdAsync(id);
+
+        public async Task<bool> ValidateEmailConfirmAsync(WorkshopUser user)
+            => await _userManager.IsEmailConfirmedAsync(user);
+
+        public async Task<bool> ConfirmEmailAsync(WorkshopUser user, string token)
         {
-            var user = await _userManager.FindByEmailAsync(email);
-            return user;
+            var confirm = await _userManager.ConfirmEmailAsync(user, token);
+            return confirm.Succeeded;
         }
 
         public async Task<bool> IsUserValidAsync(AuthenticationRequest credentials)
         {
             var user = await _userManager.FindByEmailAsync(credentials.EmailAddress);
-            if (user == null)
+            bool emailConfirmed = await ValidateEmailConfirmAsync(user);
+            if (user == null || !emailConfirmed)
                 return false;
             bool loginSucceded = await _userManager.CheckPasswordAsync(user, credentials.Password);
             return loginSucceded;
@@ -64,7 +77,7 @@ namespace Workshop.API.Services
             return await matches.FirstOrDefaultAsync();
         }
 
-        public async Task<bool> DeleteTokenAsync(string token)
+        public async Task<bool> DeleteRefreshTokenAsync(string token)
         {
             var refreshToken = await _dbContext.RefreshToken.FirstOrDefaultAsync(rt => rt.Token == token);
             if (refreshToken == null)
@@ -73,9 +86,10 @@ namespace Workshop.API.Services
             return true;
         }
 
+        public async Task<string> GenerateEmailConfirmationTokenAsync(WorkshopUser user)
+            => await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
         public async Task<int> SaveChangesAsync()
-        {
-            return await _dbContext.SaveChangesAsync();
-        }
+            => await _dbContext.SaveChangesAsync();
     }
 }

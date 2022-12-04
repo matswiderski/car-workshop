@@ -8,6 +8,7 @@ namespace Workshop.API.Models
         public string EmailAddress { get; init; }
         public string Password { get; init; }
         public string ConfirmPasword { get; init; }
+        public string AccountType { get; init; }
     }
     public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
     {
@@ -22,6 +23,9 @@ namespace Workshop.API.Models
 
             RuleFor(x => x.ConfirmPasword)
                 .Equal(x => x.Password).WithMessage("Passwords are not equal.");
+
+            RuleFor(x => x.AccountType)
+                .NotEmpty();
         }
     }
 }
