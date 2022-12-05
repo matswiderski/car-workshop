@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Workshop.API.Data;
-using Workshop.API.Filters;
 using Workshop.API.Models;
 using Workshop.API.Providers;
 using Workshop.API.Services;
@@ -74,8 +73,7 @@ namespace Workshop.API.Extensions
 
         public static void AddFluentValidation(this IServiceCollection services)
         {
-            services.AddFluentValidationAutoValidation();
-            services.AddValidatorsFromAssemblyContaining<ValidateModelAttribute>();
+            services.AddValidatorsFromAssemblyContaining<RegisterRequest>();
             ValidatorOptions.Global.LanguageManager.Enabled = false;
         }
 

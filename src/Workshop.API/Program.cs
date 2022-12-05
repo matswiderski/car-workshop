@@ -1,5 +1,5 @@
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Workshop.API.Extensions;
 using Workshop.API.Models;
 using Workshop.API.Providers;

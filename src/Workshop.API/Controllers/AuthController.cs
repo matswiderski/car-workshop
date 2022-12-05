@@ -1,8 +1,9 @@
-﻿using Azure.Core;
-using Microsoft.AspNetCore.Authorization;
+﻿using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
+using Workshop.API.Extensions;
 using Workshop.API.Models;
 using Workshop.API.Services;
 
@@ -15,12 +16,17 @@ namespace Workshop.API.Controllers
         private readonly ITokenService _tokenService;
         private readonly IUserRepositoryService _userRepositoryService;
         private readonly IMailService _mailService;
+        private IValidator<RegisterRequest> _registerRequestValidator;
 
-        public AuthController(UserManager<WorkshopUser> userManager, ITokenService tokenService, IUserRepositoryService userRepositoryService, IMailService mailService)
+        public AuthController(UserManager<WorkshopUser> userManager, 
+            ITokenService tokenService, IUserRepositoryService userRepositoryService, 
+            IMailService mailService, 
+            IValidator<RegisterRequest> registerRequestValidator)
         {
             _tokenService = tokenService;
             _userRepositoryService = userRepositoryService;
             _mailService = mailService;
+            _registerRequestValidator = registerRequestValidator;
         }
 
         [Consumes(MediaTypeNames.Application.Json)]
@@ -29,10 +35,6 @@ namespace Workshop.API.Controllers
         [HttpPost, Route("login")]
         public async Task<IActionResult> Login([FromBody] AuthenticationRequest credentials)
         {
-            bool userValid = await _userRepositoryService.IsUserValidAsync(credentials);
-            if (!userValid)
-                return BadRequest();
-
             string accessToken = _tokenService.GenerateAccessToken(credentials);
             string refreshToken = (await _userRepositoryService.CreateUserRefreshTokenAsync(credentials.EmailAddress)).Token;
             await _userRepositoryService.SaveChangesAsync();
@@ -54,9 +56,10 @@ namespace Workshop.API.Controllers
         [HttpPost, Route("signup")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest credentials)
         {
-            bool userCreated = await _userRepositoryService.CreateUserAsync(credentials);
-            if (!userCreated)
-                return BadRequest();
+            ValidationResult fresult = await _registerRequestValidator.ValidateAsync(credentials);
+            if (!fresult.IsValid)
+                return BadRequest(fresult.ToResponseObject(StatusCodes.Status400BadRequest));
+            var result = await _userRepositoryService.CreateUserAsync(credentials);
             var user = await _userRepositoryService.GetUserByEmailAsync(credentials.EmailAddress);
             string token = await _userRepositoryService.GenerateEmailConfirmationTokenAsync(user);
             var confirmationLink = Url.Link("ConfirmEmail", new { id = user.Id, token });
@@ -77,7 +80,6 @@ namespace Workshop.API.Controllers
             bool confirmed = await _userRepositoryService.ConfirmEmailAsync(user, token);
             return new RedirectResult("http://localhost:3000/", true);
         }
-
 
         [Consumes(MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Object))]

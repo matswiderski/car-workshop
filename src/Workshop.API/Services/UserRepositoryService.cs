@@ -1,7 +1,12 @@
 ﻿using Azure.Core;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System;
 using Workshop.API.Data;
+using Workshop.API.Extensions;
 using Workshop.API.Models;
 
 namespace Workshop.API.Services
@@ -22,11 +27,30 @@ namespace Workshop.API.Services
 
         public async Task<bool> CreateUserAsync(RegisterRequest credentials)
         {
-            var result = await _userManager.CreateAsync(
-            new WorkshopUser { Email = credentials.EmailAddress, UserName = credentials.EmailAddress.Trim(new Char[] { ' ', '@', '.' }) },
-                credentials.Password
-            );
-            return result.Succeeded ? true : false;
+            IdentityResult result = new();
+            if (credentials.AccountType.ToLower().Equals("business"))
+            {
+                result = await _userManager.CreateAsync(
+                new BusinessUser { Email = credentials.EmailAddress, UserName = credentials.EmailAddress.Trim(new Char[] { ' ', '@', '.' }) },
+                    credentials.Password
+                );
+            }
+            else if (credentials.AccountType.ToLower().Equals("personal"))
+            {
+                result = await _userManager.CreateAsync(
+                new PersonalUser { Email = credentials.EmailAddress, UserName = credentials.EmailAddress.Trim(new Char[] { ' ', '@', '.' }) },
+                    credentials.Password
+                    );
+            }
+
+            if (result.Succeeded)
+                return true;
+            /*
+                        foreach (var item in result.ToRegisterResultErrors())
+                        {
+                            fresult.AddToModelState(item.Value)
+                        }*/
+            return false;
         }
 
         public async Task<WorkshopUser> GetUserByEmailAsync(string email)
@@ -65,13 +89,13 @@ namespace Workshop.API.Services
                 CreationTime = DateTime.UtcNow,
                 IsActive = true
             };
-            _dbContext.RefreshToken.Add(token);
+            _dbContext.RefreshTokens.Add(token);
             return token;
         }
 
         public async Task<RefreshToken?> IsRefreshTokenValidAsync(WorkshopUser user, string token)
         {
-            var matches = _dbContext.RefreshToken
+            var matches = _dbContext.RefreshTokens
                 .Where(rt => rt.Token.Equals(token) && rt.User.Id == user.Id && rt.IsActive);
             if (matches.Count() != 1) return null;
             return await matches.FirstOrDefaultAsync();
@@ -79,10 +103,10 @@ namespace Workshop.API.Services
 
         public async Task<bool> DeleteRefreshTokenAsync(string token)
         {
-            var refreshToken = await _dbContext.RefreshToken.FirstOrDefaultAsync(rt => rt.Token == token);
+            var refreshToken = await _dbContext.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == token);
             if (refreshToken == null)
                 return false;
-            _dbContext.RefreshToken.Remove(refreshToken);
+            _dbContext.RefreshTokens.Remove(refreshToken);
             return true;
         }
 
