@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -16,11 +15,12 @@ namespace Workshop.API.Services
             _config = config;
         }
 
-        public string GenerateAccessToken(AuthenticationRequest credentials)
+        public string GenerateAccessToken(AuthenticationRequest credentials, string id)
         {
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, credentials.EmailAddress)
+                new Claim(ClaimTypes.Name, credentials.EmailAddress),
+                new Claim(ClaimTypes.NameIdentifier, id),
             };
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SecretKey"]));
             var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
@@ -28,7 +28,7 @@ namespace Workshop.API.Services
                 issuer: _config["JWT:ValidIssuer"],
                 audience: _config["JWT:ValidAudience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(3),
+                expires: DateTime.UtcNow.AddSeconds(20),
                 signingCredentials: signinCredentials
             );
             return new JwtSecurityTokenHandler().WriteToken(token);
@@ -42,7 +42,7 @@ namespace Workshop.API.Services
             return Convert.ToBase64String(randomNumber);
         }
 
-        public ClaimsPrincipal GetClaimsPrincipalFromExpiredToken(string token)
+        public ClaimsPrincipal GetClaimsPrincipalFromToken(string token)
         {
             var tokenValidationParameters = new TokenValidationParameters
             {

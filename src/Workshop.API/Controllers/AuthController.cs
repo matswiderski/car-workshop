@@ -3,7 +3,6 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 using System.Net.Mime;
 using Workshop.API.Extensions;
 using Workshop.API.Models;
@@ -44,7 +43,8 @@ namespace Workshop.API.Controllers
             ValidationResult fresult = await _authenticationRequestValidator.ValidateAsync(credentials);
             if (!fresult.IsValid)
                 return BadRequest(fresult.ToResponseObject(StatusCodes.Status400BadRequest));
-            string accessToken = _tokenService.GenerateAccessToken(credentials);
+            var user = await _userRepositoryService.GetUserByEmailAsync(credentials.EmailAddress);
+            string accessToken = _tokenService.GenerateAccessToken(credentials, user.Id);
             string refreshToken = (await _userRepositoryService.CreateUserRefreshTokenAsync(credentials.EmailAddress)).Token;
             await _userRepositoryService.SaveChangesAsync();
             var cookieOptions = new CookieOptions()
@@ -53,7 +53,7 @@ namespace Workshop.API.Controllers
                 IsEssential = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddDays(14)
+                Expires = DateTime.UtcNow.AddMinutes(1)
             };
             Response.Cookies.Append("x-refresh-token", refreshToken, cookieOptions);
             return Ok(new { token = accessToken });
@@ -86,6 +86,15 @@ namespace Workshop.API.Controllers
             string? token = Request.Cookies["x-refresh-token"];
             bool removed = await _userRepositoryService.DeleteRefreshTokenAsync(token);
             await _userRepositoryService.SaveChangesAsync();
+            var cookieOptions = new CookieOptions()
+            {
+                HttpOnly = true,
+                IsEssential = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddDays(-1)
+            };
+            Response.Cookies.Append("x-refresh-token", "", cookieOptions);
             return removed ? Ok() : BadRequest();
         }
 
@@ -107,7 +116,7 @@ namespace Workshop.API.Controllers
         [HttpPost, Route("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] string token)
         {
-            var claimsPrincpal = _tokenService.GetClaimsPrincipalFromExpiredToken(token);
+            var claimsPrincpal = _tokenService.GetClaimsPrincipalFromToken(token);
             var email = claimsPrincpal.Identity.Name;
             var user = await _userRepositoryService.GetUserByEmailAsync(email);
             if (user == null)
@@ -115,7 +124,7 @@ namespace Workshop.API.Controllers
             var refreshToken = await _userRepositoryService.IsRefreshTokenValidAsync(user, Request.Cookies["x-refresh-token"]);
             if (refreshToken == null)
                 return Unauthorized();
-            if (refreshToken.CreationTime.AddDays(14) < DateTime.UtcNow)
+            if (refreshToken.CreationTime.AddSeconds(30) < DateTime.UtcNow)
                 return Unauthorized();
             await _userRepositoryService.DeleteRefreshTokenAsync(refreshToken.Token);
             string newAccessToken = _tokenService.GenerateAccessToken(
@@ -123,7 +132,7 @@ namespace Workshop.API.Controllers
                 {
                     EmailAddress = email,
                     Password = user.PasswordHash
-                });
+                }, user.Id);
             var newRefreshToken = await _userRepositoryService.CreateUserRefreshTokenAsync(email);
             await _userRepositoryService.SaveChangesAsync();
             var cookieOptions = new CookieOptions()

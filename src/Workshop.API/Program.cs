@@ -21,6 +21,7 @@ namespace Workshop.API
             builder.Services.AddFluentValidation();
             builder.Services.AddSingleton<ITokenService, TokenService>();
             builder.Services.AddScoped<IUserRepositoryService, UserRepositoryService>();
+            builder.Services.AddScoped<ICarRepositoryService, CarRepositoryService>();
             builder.Services.AddTransient<EmailConfirmationTokenProvider<WorkshopUser>>();
             builder.Logging.ClearProviders();
             builder.Logging.AddConsole();

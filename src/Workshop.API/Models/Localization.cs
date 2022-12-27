@@ -2,6 +2,7 @@
 
 namespace Workshop.API.Models
 {
+    [Table("Localizations")]
     public class Localization
     {
         public string Id { get; set; }

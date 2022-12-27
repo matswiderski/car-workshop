@@ -1,6 +1,4 @@
-﻿using Azure.Core;
-using FluentValidation;
-using FluentValidation.AspNetCore;
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Workshop.API.Data;

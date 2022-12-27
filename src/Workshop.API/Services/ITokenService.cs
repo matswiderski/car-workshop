@@ -5,8 +5,8 @@ namespace Workshop.API.Services
 {
     public interface ITokenService
     {
-        string GenerateAccessToken(AuthenticationRequest credentials);
+        string GenerateAccessToken(AuthenticationRequest credentials, string id);
         string GenerateRefreshToken();
-        ClaimsPrincipal GetClaimsPrincipalFromExpiredToken(string token);
+        ClaimsPrincipal GetClaimsPrincipalFromToken(string token);
     }
 }

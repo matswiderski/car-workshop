@@ -11,6 +11,7 @@ namespace Workshop.API.Data
         public DbSet<BusinessUser> BusinessUsers { get; set; }
         public DbSet<PersonalUser> PersonalUsers { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<Car> Cars { get; set; }
 
         public WorkshopDbContext(DbContextOptions options) : base(options)
         {
@@ -27,6 +28,13 @@ namespace Workshop.API.Data
             modelBuilder.Entity<WorkshopUser>()
                 .HasMany(wu => wu.RefreshTokens)
                 .WithOne(rt => rt.User);
+
+            modelBuilder.Entity<Car>().ToTable("Cars");
+            modelBuilder.Entity<PersonalUser>()
+                .HasMany(pu => pu.Cars)
+                .WithOne(c => c.PersonalUser)
+                .HasForeignKey(c => c.PersonalUserId);
+
             base.OnModelCreating(modelBuilder);
         }
 
