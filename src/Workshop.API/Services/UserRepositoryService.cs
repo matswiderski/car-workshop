@@ -1,12 +1,9 @@
 ﻿using Azure.Core;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
 using Workshop.API.Data;
-using Workshop.API.Extensions;
 using Workshop.API.Models;
 
 namespace Workshop.API.Services
@@ -42,15 +39,7 @@ namespace Workshop.API.Services
                     credentials.Password
                     );
             }
-
-            if (result.Succeeded)
-                return true;
-            /*
-                        foreach (var item in result.ToRegisterResultErrors())
-                        {
-                            fresult.AddToModelState(item.Value)
-                        }*/
-            return false;
+            return result.Succeeded;
         }
 
         public async Task<WorkshopUser> GetUserByEmailAsync(string email)
@@ -71,8 +60,10 @@ namespace Workshop.API.Services
         public async Task<bool> IsUserValidAsync(AuthenticationRequest credentials)
         {
             var user = await _userManager.FindByEmailAsync(credentials.EmailAddress);
+            if (user == null)
+                return false;
             bool emailConfirmed = await ValidateEmailConfirmAsync(user);
-            if (user == null || !emailConfirmed)
+            if (!emailConfirmed)
                 return false;
             bool loginSucceded = await _userManager.CheckPasswordAsync(user, credentials.Password);
             return loginSucceded;

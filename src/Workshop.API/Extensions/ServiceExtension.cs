@@ -73,6 +73,7 @@ namespace Workshop.API.Extensions
 
         public static void AddFluentValidation(this IServiceCollection services)
         {
+            services.AddValidatorsFromAssemblyContaining<AuthenticationRequest>();
             services.AddValidatorsFromAssemblyContaining<RegisterRequest>();
             ValidatorOptions.Global.LanguageManager.Enabled = false;
         }

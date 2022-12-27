@@ -1,11 +1,14 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using System.Net.Mime;
 using Workshop.API.Extensions;
 using Workshop.API.Models;
 using Workshop.API.Services;
+using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace Workshop.API.Controllers
 {
@@ -17,16 +20,19 @@ namespace Workshop.API.Controllers
         private readonly IUserRepositoryService _userRepositoryService;
         private readonly IMailService _mailService;
         private IValidator<RegisterRequest> _registerRequestValidator;
+        private IValidator<AuthenticationRequest> _authenticationRequestValidator;
 
-        public AuthController(UserManager<WorkshopUser> userManager, 
-            ITokenService tokenService, IUserRepositoryService userRepositoryService, 
-            IMailService mailService, 
-            IValidator<RegisterRequest> registerRequestValidator)
+        public AuthController(UserManager<WorkshopUser> userManager,
+            ITokenService tokenService, IUserRepositoryService userRepositoryService,
+            IMailService mailService,
+            IValidator<RegisterRequest> registerRequestValidator,
+            IValidator<AuthenticationRequest> authenticationRequestValidator)
         {
             _tokenService = tokenService;
             _userRepositoryService = userRepositoryService;
             _mailService = mailService;
             _registerRequestValidator = registerRequestValidator;
+            _authenticationRequestValidator = authenticationRequestValidator;
         }
 
         [Consumes(MediaTypeNames.Application.Json)]
@@ -35,6 +41,9 @@ namespace Workshop.API.Controllers
         [HttpPost, Route("login")]
         public async Task<IActionResult> Login([FromBody] AuthenticationRequest credentials)
         {
+            ValidationResult fresult = await _authenticationRequestValidator.ValidateAsync(credentials);
+            if (!fresult.IsValid)
+                return BadRequest(fresult.ToResponseObject(StatusCodes.Status400BadRequest));
             string accessToken = _tokenService.GenerateAccessToken(credentials);
             string refreshToken = (await _userRepositoryService.CreateUserRefreshTokenAsync(credentials.EmailAddress)).Token;
             await _userRepositoryService.SaveChangesAsync();
@@ -67,6 +76,17 @@ namespace Workshop.API.Controllers
                     "Confirm your email address",
                     $"In order to confirm your email address click on this link: {confirmationLink}");
             return Ok();
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpPost, Route("logout"), Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            string? token = Request.Cookies["x-refresh-token"];
+            bool removed = await _userRepositoryService.DeleteRefreshTokenAsync(token);
+            await _userRepositoryService.SaveChangesAsync();
+            return removed ? Ok() : BadRequest();
         }
 
         [ProducesResponseType(StatusCodes.Status308PermanentRedirect)]

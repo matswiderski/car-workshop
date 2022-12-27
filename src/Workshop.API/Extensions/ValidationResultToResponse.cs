@@ -13,7 +13,7 @@ namespace Workshop.API.Extensions
                 errors.Add(property, result.Errors.Where(e => e.PropertyName == property).Select(e => e.ErrorMessage).ToArray());
             return new
             {
-                _title,
+                title = _title,
                 status,
                 Errors = errors
             };

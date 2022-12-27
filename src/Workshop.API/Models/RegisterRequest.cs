@@ -21,17 +21,20 @@ namespace Workshop.API.Models
 
             RuleFor(x => x.EmailAddress)
                 .EmailAddress()
-                .MustAsync((email, cancellation) => BeUniqueAsync(email)).WithMessage("Email is already taken.");
+                .MustAsync((email, cancellation) => BeUniqueAsync(email))
+                .WithMessage("Email is already taken.");
 
             RuleFor(x => x.Password)
                 .NotEmpty()
                 .Password();
 
             RuleFor(x => x.ConfirmPassword)
-                .Equal(x => x.Password).WithMessage("Passwords are not equal.");
+                .Equal(x => x.Password)
+                .WithMessage("Passwords are not equal.");
 
             RuleFor(x => x.AccountType)
-                .NotEmpty().WithMessage("'Account Type' is required.");
+                .NotEmpty()
+                .WithMessage("'Account Type' is required.");
 
         }
         private async Task<bool> BeUniqueAsync(string email)

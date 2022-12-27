@@ -12,11 +12,11 @@ namespace Workshop.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            string AllowReactUI = "allowReactUI";
+            string AllowWebClient = "allowWebClient";
             builder.AddDb();
             builder.AddAuthentication();
             builder.AddMailService();
-            builder.Services.AddCors(AllowReactUI);
+            builder.Services.AddCors(AllowWebClient);
             builder.Services.AddIdentity();
             builder.Services.AddFluentValidation();
             builder.Services.AddSingleton<ITokenService, TokenService>();
@@ -38,7 +38,7 @@ namespace Workshop.API
 
             app.UseHttpsRedirection();
 
-            app.UseCors(AllowReactUI);
+            app.UseCors(AllowWebClient);
 
             app.UseAuthentication();
             app.UseAuthorization();
