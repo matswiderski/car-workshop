@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Workshop.API.Data;
+using Workshop.API.Dtos;
 using Workshop.API.Models;
 using Workshop.API.Providers;
 using Workshop.API.Services;
@@ -75,6 +76,7 @@ namespace Workshop.API.Extensions
         {
             services.AddValidatorsFromAssemblyContaining<AuthenticationRequest>();
             services.AddValidatorsFromAssemblyContaining<RegisterRequest>();
+            services.AddValidatorsFromAssemblyContaining<CarDto>();
             ValidatorOptions.Global.LanguageManager.Enabled = false;
         }
 

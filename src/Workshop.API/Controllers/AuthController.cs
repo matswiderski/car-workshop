@@ -53,7 +53,7 @@ namespace Workshop.API.Controllers
                 IsEssential = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
-                Expires = DateTime.UtcNow.AddMinutes(1)
+                Expires = DateTime.UtcNow.AddDays(14)
             };
             Response.Cookies.Append("x-refresh-token", refreshToken, cookieOptions);
             return Ok(new { token = accessToken });
@@ -124,7 +124,7 @@ namespace Workshop.API.Controllers
             var refreshToken = await _userRepositoryService.IsRefreshTokenValidAsync(user, Request.Cookies["x-refresh-token"]);
             if (refreshToken == null)
                 return Unauthorized();
-            if (refreshToken.CreationTime.AddSeconds(30) < DateTime.UtcNow)
+            if (refreshToken.CreationTime.AddDays(14) < DateTime.UtcNow)
                 return Unauthorized();
             await _userRepositoryService.DeleteRefreshTokenAsync(refreshToken.Token);
             string newAccessToken = _tokenService.GenerateAccessToken(

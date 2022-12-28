@@ -7,7 +7,7 @@ namespace Workshop.API.Extensions
     {
         public static CarDto AsDto(this Car car)
         {
-            return new CarDto(car.Brand, car.Model, car.LicensePlate, car.ProductionYear);
+            return new CarDto(car.Id, car.Brand, car.Model, car.LicensePlate, car.ProductionYear);
         }
     }
 }

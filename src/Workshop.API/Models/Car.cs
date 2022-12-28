@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using FluentValidation;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Workshop.API.Models
 {

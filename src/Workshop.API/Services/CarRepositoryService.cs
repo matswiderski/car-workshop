@@ -36,5 +36,14 @@ namespace Workshop.API.Services
             await _dbContext.Cars.AddAsync(newCar);
             return newCar;
         }
+
+        public async Task<bool> DeleteCarAsync(string id)
+        {
+            var car = await _dbContext.Cars.FirstOrDefaultAsync(c => c.Id == id);
+            if (car == null)
+                return false;
+            _dbContext.Remove(car);
+            return true;
+        }
     }
 }
