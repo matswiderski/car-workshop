@@ -1,14 +1,13 @@
 {
   "profiles": {
-    "Categories.API": {
+    "Workshop.API": {
       "commandName": "Project",
-      "launchBrowser": false,
       "launchUrl": "swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "https://localhost:5001"
+      "applicationUrl": "https://localhost:5002"
     },
     "IIS Express": {
       "commandName": "IISExpress",
@@ -24,8 +23,8 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:13752",
-      "sslPort": 44319
+      "applicationUrl": "http://localhost:37749",
+      "sslPort": 44356
     }
   }
 }
