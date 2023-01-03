@@ -17,7 +17,7 @@ namespace Workshop.API.Services
         }
 
         public async Task<Car?> GetCarAsync(string id)
-            => await _dbContext.Cars.Where(c => c.Id == id).FirstOrDefaultAsync();
+            => await _dbContext.Cars.Where(c => c.Id == id).SingleOrDefaultAsync();
 
         public async Task<IEnumerable<Car>> GetCarsAsync(string id)
            => await _dbContext.Cars.Where(c => c.PersonalUserId == id).ToListAsync();
@@ -37,9 +37,21 @@ namespace Workshop.API.Services
             return newCar;
         }
 
+        public async Task<Car?> UpdateCarAsync(CarDto carToUpdate)
+        {
+            var car = await _dbContext.Cars.SingleOrDefaultAsync(c => c.Id == carToUpdate.id);
+            if (car == null)
+                return car;
+            car.LicensePlate = carToUpdate.licensePlate;
+            car.ProductionYear = carToUpdate.productionYear;
+            car.Model = carToUpdate.model;
+            car.Brand = carToUpdate.brand;
+            return car;
+        }
+
         public async Task<bool> DeleteCarAsync(string id)
         {
-            var car = await _dbContext.Cars.FirstOrDefaultAsync(c => c.Id == id);
+            var car = await _dbContext.Cars.SingleOrDefaultAsync(c => c.Id == id);
             if (car == null)
                 return false;
             _dbContext.Remove(car);

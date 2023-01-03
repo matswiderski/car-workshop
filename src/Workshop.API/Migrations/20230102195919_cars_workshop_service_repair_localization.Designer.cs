@@ -12,8 +12,8 @@ using Workshop.API.Data;
 namespace Workshop.API.Migrations
 {
     [DbContext(typeof(WorkshopDbContext))]
-    [Migration("20221227125458_car_model")]
-    partial class car_model
+    [Migration("20230102195919_cars_workshop_service_repair_localization")]
+    partial class cars_workshop_service_repair_localization
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -185,7 +185,7 @@ namespace Workshop.API.Migrations
 
                     b.HasIndex("PersonalUserId");
 
-                    b.ToTable("Cars", (string)null);
+                    b.ToTable("Cars");
                 });
 
             modelBuilder.Entity("Workshop.API.Models.Localization", b =>
@@ -193,24 +193,20 @@ namespace Workshop.API.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("BusinessUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<double>("Latitude")
                         .HasColumnType("float");
 
                     b.Property<double>("Longitude")
                         .HasColumnType("float");
 
+                    b.Property<string>("WorkshopId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("BusinessUserId")
-                        .IsUnique();
+                    b.HasIndex("WorkshopId")
+                        .IsUnique()
+                        .HasFilter("[WorkshopId] IS NOT NULL");
 
                     b.ToTable("Localizations");
                 });
@@ -239,6 +235,198 @@ namespace Workshop.API.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens");
+                });
+
+            modelBuilder.Entity("Workshop.API.Models.Repair", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CarId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PersonalUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("WorkshopId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CarId");
+
+                    b.HasIndex("PersonalUserId");
+
+                    b.HasIndex("WorkshopId");
+
+                    b.ToTable("Repairs");
+                });
+
+            modelBuilder.Entity("Workshop.API.Models.RepairService", b =>
+                {
+                    b.Property<string>("ServiceId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RepairId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("ServiceId", "RepairId");
+
+                    b.HasIndex("RepairId");
+
+                    b.ToTable("RepairServices");
+                });
+
+            modelBuilder.Entity("Workshop.API.Models.Service", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Price")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Services");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "6182c48f-4e41-4609-808e-f6df95e5d85f",
+                            Category = "Maintenance",
+                            Name = "Oil change",
+                            Price = 201.5
+                        },
+                        new
+                        {
+                            Id = "9bcc9fd5-0a5a-439d-b76a-4acc39714d60",
+                            Category = "Maintenance",
+                            Name = "Tire rotation",
+                            Price = 50.0
+                        },
+                        new
+                        {
+                            Id = "1e256131-463d-4412-8759-37d1c640420b",
+                            Category = "Maintenance",
+                            Name = "Brake maintenance",
+                            Price = 100.0
+                        },
+                        new
+                        {
+                            Id = "1d16eea6-efc0-4cf9-bdba-b69326495071",
+                            Category = "Repair",
+                            Name = "Engine repair",
+                            Price = 2000.0
+                        },
+                        new
+                        {
+                            Id = "33625433-e450-4100-946c-1a8ccd8305ca",
+                            Category = "Repair",
+                            Name = "Transmission repair",
+                            Price = 1000.0
+                        },
+                        new
+                        {
+                            Id = "ba654a63-7f40-4890-82f6-bed5037392fc",
+                            Category = "Repair",
+                            Name = "Suspension repair",
+                            Price = 500.0
+                        },
+                        new
+                        {
+                            Id = "7f785c6b-99d2-41d3-aeea-1d54dbc7c964",
+                            Category = "Electrical system",
+                            Name = "Repair lectrical issues",
+                            Price = 200.0
+                        },
+                        new
+                        {
+                            Id = "8f30b948-9c82-4448-90f0-e0b93dae57e8",
+                            Category = "Air conditioning",
+                            Name = "Compressor repair",
+                            Price = 100.0
+                        },
+                        new
+                        {
+                            Id = "2e264c35-29ce-40f2-9377-cb7a6ac9fb88",
+                            Category = "Air conditioning",
+                            Name = "Evaporator repair",
+                            Price = 100.0
+                        },
+                        new
+                        {
+                            Id = "32b98306-a9b0-4672-8203-bd8ad14fcdf7",
+                            Category = "Detailing",
+                            Name = "Exterior wash",
+                            Price = 200.0
+                        },
+                        new
+                        {
+                            Id = "53c816fa-792f-4e2f-b35d-33a2e43f5df0",
+                            Category = "Safety inspections",
+                            Name = "Safety inspection",
+                            Price = 300.0
+                        },
+                        new
+                        {
+                            Id = "bb8281ea-0583-4705-b8c7-9da2692d9542",
+                            Category = "Other",
+                            Name = "Other",
+                            Price = 50.0
+                        });
+                });
+
+            modelBuilder.Entity("Workshop.API.Models.Workshop", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("LocalizationId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("Workshops");
+                });
+
+            modelBuilder.Entity("Workshop.API.Models.WorkshopService", b =>
+                {
+                    b.Property<string>("ServiceId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("WorkshopId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("ServiceId", "WorkshopId");
+
+                    b.HasIndex("WorkshopId");
+
+                    b.ToTable("WorkshopServices");
                 });
 
             modelBuilder.Entity("Workshop.API.Models.WorkshopUser", b =>
@@ -310,16 +498,13 @@ namespace Workshop.API.Migrations
                 {
                     b.HasBaseType("Workshop.API.Models.WorkshopUser");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("OwnerFirstName")
+                    b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("OwnerLastName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.ToTable("BusinessUsers", (string)null);
+                    b.ToTable("BusinessUsers");
                 });
 
             modelBuilder.Entity("Workshop.API.Models.PersonalUser", b =>
@@ -332,7 +517,7 @@ namespace Workshop.API.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.ToTable("PersonalUsers", (string)null);
+                    b.ToTable("PersonalUsers");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -399,13 +584,11 @@ namespace Workshop.API.Migrations
 
             modelBuilder.Entity("Workshop.API.Models.Localization", b =>
                 {
-                    b.HasOne("Workshop.API.Models.BusinessUser", "BusinessUser")
+                    b.HasOne("Workshop.API.Models.Workshop", "Workshop")
                         .WithOne("Localization")
-                        .HasForeignKey("Workshop.API.Models.Localization", "BusinessUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("Workshop.API.Models.Localization", "WorkshopId");
 
-                    b.Navigation("BusinessUser");
+                    b.Navigation("Workshop");
                 });
 
             modelBuilder.Entity("Workshop.API.Models.RefreshToken", b =>
@@ -417,6 +600,82 @@ namespace Workshop.API.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Workshop.API.Models.Repair", b =>
+                {
+                    b.HasOne("Workshop.API.Models.Car", "Car")
+                        .WithMany()
+                        .HasForeignKey("CarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Workshop.API.Models.PersonalUser", "PersonalUser")
+                        .WithMany("Repairs")
+                        .HasForeignKey("PersonalUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Workshop.API.Models.Workshop", "Workshop")
+                        .WithMany("Repairs")
+                        .HasForeignKey("WorkshopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Car");
+
+                    b.Navigation("PersonalUser");
+
+                    b.Navigation("Workshop");
+                });
+
+            modelBuilder.Entity("Workshop.API.Models.RepairService", b =>
+                {
+                    b.HasOne("Workshop.API.Models.Repair", "Repair")
+                        .WithMany("RepairServices")
+                        .HasForeignKey("RepairId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Workshop.API.Models.Service", "Service")
+                        .WithMany("RepairServices")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Repair");
+
+                    b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("Workshop.API.Models.Workshop", b =>
+                {
+                    b.HasOne("Workshop.API.Models.BusinessUser", "Owner")
+                        .WithMany("Workshops")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("Workshop.API.Models.WorkshopService", b =>
+                {
+                    b.HasOne("Workshop.API.Models.Service", "Service")
+                        .WithMany("WorkshopServices")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Workshop.API.Models.Workshop", "Workshop")
+                        .WithMany("WorkshopServices")
+                        .HasForeignKey("WorkshopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Service");
+
+                    b.Navigation("Workshop");
                 });
 
             modelBuilder.Entity("Workshop.API.Models.BusinessUser", b =>
@@ -437,6 +696,28 @@ namespace Workshop.API.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Workshop.API.Models.Repair", b =>
+                {
+                    b.Navigation("RepairServices");
+                });
+
+            modelBuilder.Entity("Workshop.API.Models.Service", b =>
+                {
+                    b.Navigation("RepairServices");
+
+                    b.Navigation("WorkshopServices");
+                });
+
+            modelBuilder.Entity("Workshop.API.Models.Workshop", b =>
+                {
+                    b.Navigation("Localization")
+                        .IsRequired();
+
+                    b.Navigation("Repairs");
+
+                    b.Navigation("WorkshopServices");
+                });
+
             modelBuilder.Entity("Workshop.API.Models.WorkshopUser", b =>
                 {
                     b.Navigation("RefreshTokens");
@@ -444,12 +725,14 @@ namespace Workshop.API.Migrations
 
             modelBuilder.Entity("Workshop.API.Models.BusinessUser", b =>
                 {
-                    b.Navigation("Localization");
+                    b.Navigation("Workshops");
                 });
 
             modelBuilder.Entity("Workshop.API.Models.PersonalUser", b =>
                 {
                     b.Navigation("Cars");
+
+                    b.Navigation("Repairs");
                 });
 #pragma warning restore 612, 618
         }

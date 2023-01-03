@@ -8,8 +8,7 @@ namespace Workshop.API.Models
         public string Id { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
-        public string City { get; set; }
-        public string BusinessUserId { get; set; }
-        public BusinessUser BusinessUser { get; set; }
+        public string? WorkshopId { get; set; }
+        public Workshop? Workshop { get; set; }
     }
 }

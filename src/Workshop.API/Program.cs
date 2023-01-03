@@ -22,6 +22,9 @@ namespace Workshop.API
             builder.Services.AddSingleton<ITokenService, TokenService>();
             builder.Services.AddScoped<IUserRepositoryService, UserRepositoryService>();
             builder.Services.AddScoped<ICarRepositoryService, CarRepositoryService>();
+            builder.Services.AddScoped<IServicesRepository, ServicesRepository>();
+            builder.Services.AddScoped<IRepairRepositoryService, RepairRepositoryService>();
+            builder.Services.AddScoped<IWorkshopRepositoryService, WorkshopRepositoryService>();
             builder.Services.AddTransient<EmailConfirmationTokenProvider<WorkshopUser>>();
             builder.Logging.ClearProviders();
             builder.Logging.AddConsole();

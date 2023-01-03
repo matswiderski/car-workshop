@@ -43,7 +43,7 @@ namespace Workshop.API.Controllers
             return Ok((await _carRepositoryService.GetCarsAsync(claimsPrincpal.GetNameIdentifierId())).Select(c => c.AsDto()));
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Car))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CarDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet, Route("get/{id:length(36)}"), Authorize]
         public async Task<IActionResult> GetCarAsync(string id)
@@ -55,7 +55,7 @@ namespace Workshop.API.Controllers
         }
 
         [Consumes(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Car))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(CarDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost, Route("create"), Authorize]
         public async Task<IActionResult> CreateCarAsync([FromBody] CarDto car)
@@ -73,13 +73,29 @@ namespace Workshop.API.Controllers
             return CreatedAtAction("GetCar", new { id = newCar.Id }, newCar.AsDto());
         }
 
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpPatch, Route("update"), Authorize]
+        public async Task<IActionResult> UpdateCarAsync([FromBody] CarDto car)
+        {
+            ValidationResult fresult = await _carValidator.ValidateAsync(car);
+            if (!fresult.IsValid)
+                return BadRequest(fresult.ToResponseObject(StatusCodes.Status400BadRequest));
+            var updatedCar = await _carRepositoryService.UpdateCarAsync(car);
+            if (updatedCar == null)
+                return BadRequest();
+            await _userRepositoryService.SaveChangesAsync();
+            return NoContent();
+        }
+
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost, Route("delete"), Authorize]
         public async Task<IActionResult> DeleteCarAsync([FromBody] CarDto[] cars)
         {
             foreach (var car in cars)
-                await _carRepositoryService.DeleteCarAsync(car.Id);
+                await _carRepositoryService.DeleteCarAsync(car.id);
             await _userRepositoryService.SaveChangesAsync();
             return Ok();
         }

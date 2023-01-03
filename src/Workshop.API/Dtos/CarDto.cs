@@ -3,7 +3,7 @@ using Workshop.API.Models;
 
 namespace Workshop.API.Dtos
 {
-    public record CarDto(string? Id, string brand, string model, string licensePlate, int productionYear);
+    public record CarDto(string? id, string brand, string model, string licensePlate, int productionYear);
 
     public class CarDtoValidator : AbstractValidator<CarDto>
     {

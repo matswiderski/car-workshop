@@ -6,9 +6,8 @@ namespace Workshop.API.Models
     public class BusinessUser : WorkshopUser
     {
         public string Id { get; set; }
-        public string? Name { get; set; }
-        public string? OwnerFirstName { get; set; }
-        public string? OwnerLastName { get; set; }
-        public Localization? Localization { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public ICollection<Workshop>? Workshops { get; set; }
     }
 }

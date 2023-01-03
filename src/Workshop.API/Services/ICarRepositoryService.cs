@@ -9,5 +9,6 @@ namespace Workshop.API.Services
         Task<bool> DeleteCarAsync(string id);
         Task<Car?> GetCarAsync(string id);
         Task<IEnumerable<Car>> GetCarsAsync(string id);
+        Task<Car?> UpdateCarAsync(CarDto carToUpdate);
     }
 }
