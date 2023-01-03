@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Web;
 using Microsoft.Net.Http.Headers;
 using System.Net.Mime;
 using Workshop.API.Dtos;
@@ -23,6 +24,14 @@ namespace Workshop.API.Controllers
             _userRepositoryService = userRepositoryService;
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RepairDto>))]
+        [HttpGet, Route("get-all"), Authorize]
+        public async Task<IActionResult> GetAllAsync()
+        {
+            string token = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", string.Empty);
+            var claimsPrincpal = _tokenService.GetClaimsPrincipalFromToken(token);
+            return Ok(_repairRepositoryService.GetUserRepairs(claimsPrincpal.GetNameIdentifierId()).Select(r => r.AsDto()));
+        }
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RepairDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

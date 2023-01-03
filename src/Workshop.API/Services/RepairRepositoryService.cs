@@ -18,7 +18,12 @@ namespace Workshop.API.Services
             => await _dbContext.Repairs.Where(r => r.Id == id).SingleOrDefaultAsync();
 
         public IEnumerable<Repair> GetUserRepairs(string userId)
-            => _dbContext.Repairs.Where(r => r.PersonalUserId == userId);
+            => _dbContext.Repairs.
+            Where(r => r.PersonalUserId == userId)
+            .Include(r => r.Car)
+            .Include(r => r.RepairServices).ThenInclude(s => s.Service)
+            .Include(r => r.Workshop)
+            .ThenInclude(w => w.Localization);
 
         public async Task<Repair> CreateRepairAsync(RepairDto repairDto, WorkshopUser user)
         {
