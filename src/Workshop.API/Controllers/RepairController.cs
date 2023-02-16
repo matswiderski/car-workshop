@@ -24,6 +24,7 @@ namespace Workshop.API.Controllers
             _userRepositoryService = userRepositoryService;
         }
 
+
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RepairDto>))]
         [HttpGet, Route("get-all"), Authorize]
         public async Task<IActionResult> GetAllAsync()
