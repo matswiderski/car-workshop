@@ -28,7 +28,7 @@ namespace Workshop.API.Services
                 issuer: _config["JWT:ValidIssuer"],
                 audience: _config["JWT:ValidAudience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(3),
+                expires: DateTime.UtcNow.AddSeconds(15),
                 signingCredentials: signinCredentials
             );
             return new JwtSecurityTokenHandler().WriteToken(token);
