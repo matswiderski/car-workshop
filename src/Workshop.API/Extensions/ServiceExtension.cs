@@ -57,11 +57,11 @@ namespace Workshop.API.Extensions
                 options => options.UseSqlServer(builder.Configuration.GetConnectionString("WorkshopContext")));
         }
 
-        public static void AddCors(this IServiceCollection services, string AllowReactUI)
+        public static void AddCors(this IServiceCollection services, string AllowWebClient, string AllowMobileClient)
         {
             services.AddCors(options =>
             {
-                options.AddPolicy(AllowReactUI,
+                options.AddPolicy(AllowWebClient,
                     policy =>
                     {
                         policy.WithOrigins("http://localhost:3000")

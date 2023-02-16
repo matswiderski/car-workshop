@@ -13,10 +13,11 @@ namespace Workshop.API
         {
             var builder = WebApplication.CreateBuilder(args);
             string AllowWebClient = "allowWebClient";
+            string AllowMobileClient = "allowMobileClient";
             builder.AddDb();
             builder.AddAuthentication();
             builder.AddMailService();
-            builder.Services.AddCors(AllowWebClient);
+            builder.Services.AddCors(AllowWebClient, AllowMobileClient);
             builder.Services.AddIdentity();
             builder.Services.AddFluentValidation();
             builder.Services.AddSingleton<ITokenService, TokenService>();

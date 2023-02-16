@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using Azure.Core;
+using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -56,7 +57,7 @@ namespace Workshop.API.Controllers
                 Expires = DateTime.UtcNow.AddDays(14)
             };
             Response.Cookies.Append("x-refresh-token", refreshToken, cookieOptions);
-            return Ok(new { token = accessToken });
+            return Ok(new { token = accessToken, refreshToken });
         }
 
         [Consumes(MediaTypeNames.Application.Json)]
@@ -133,7 +134,7 @@ namespace Workshop.API.Controllers
                     EmailAddress = email,
                     Password = user.PasswordHash
                 }, user.Id);
-            var newRefreshToken = await _userRepositoryService.CreateUserRefreshTokenAsync(email);
+/*            var newRefreshToken = await _userRepositoryService.CreateUserRefreshTokenAsync(email);
             await _userRepositoryService.SaveChangesAsync();
             var cookieOptions = new CookieOptions()
             {
@@ -143,8 +144,8 @@ namespace Workshop.API.Controllers
                 SameSite = SameSiteMode.None,
                 Expires = DateTime.UtcNow.AddDays(14)
             };
-            Response.Cookies.Append("x-refresh-token", newRefreshToken.Token, cookieOptions);
-            return Ok(new { token = newAccessToken });
+            Response.Cookies.Append("x-refresh-token", newRefreshToken.Token, cookieOptions);*/
+            return Ok(new { token = newAccessToken});
         }
     }
 }

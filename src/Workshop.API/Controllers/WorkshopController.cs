@@ -27,7 +27,7 @@ namespace Workshop.API.Controllers
         }
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<WorkshopDto>))]
-        [HttpGet, Route("get-all"), Authorize]
+        [HttpGet, Route("get-all")]
         public async Task<IActionResult> GetAllAsync()
         {
             return Ok(_workshopRepositoryService.GetWorkshopsAsync().Select(w => w.AsDto()));
